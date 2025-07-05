@@ -22,8 +22,8 @@ func NewTokenService(tokenManager *token.Manager, tokenRepository *repository.To
 	return &TokenService{tokenManager: tokenManager, tokenRepository: tokenRepository}
 }
 
-func (s *TokenService) GetTokens(ctx context.Context, userID, userAgent, ip string) (*model.TokenPair, error) {
-	accessToken, err := s.tokenManager.NewJWT(userID, 15*time.Minute)
+func (s *TokenService) GetTokens(ctx context.Context, userID, userAgent, sessionID, ip string) (*model.TokenPair, error) {
+	accessToken, err := s.tokenManager.NewJWT(userID, sessionID, 15*time.Minute)
 	if err != nil {
 		return &model.TokenPair{}, err
 	}
@@ -94,7 +94,13 @@ func (s *TokenService) RefreshTokens(ctx context.Context, oldAccessToken, oldRef
 		go s.tokenRepository.SendIpChangeWebhook(ctx, userID, storedToken.IPAddress, userAgent, ip)
 	}
 
-	accessToken, err := s.tokenManager.NewJWT(userID, 15*time.Minute)
+	if err := s.tokenRepository.RevokeUserTokens(ctx, userID); err != nil {
+		return nil, fmt.Errorf("не удалось удалить старые токены: %w", err)
+	}
+
+	tokenID, _ := uuid.NewUUID()
+
+	accessToken, err := s.tokenManager.NewJWT(userID, tokenID.String(), 15*time.Minute)
 	if err != nil {
 		return &model.RefreshRequest{}, err
 	}
@@ -103,8 +109,6 @@ func (s *TokenService) RefreshTokens(ctx context.Context, oldAccessToken, oldRef
 	if err != nil {
 		return &model.RefreshRequest{}, err
 	}
-
-	tokenID, _ := uuid.NewUUID()
 
 	userUUID, _ := uuid.Parse(userID)
 

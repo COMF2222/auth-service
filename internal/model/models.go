@@ -16,8 +16,8 @@ type TokenPair struct {
 }
 
 type RefreshRequest struct {
-	AccessToken  string `json:"access_token" binding:"required"`
-	RefreshToken string `json:"refresh_token" binding:"required"`
+	AccessToken  string `json:"access_token" binding:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+	RefreshToken string `json:"refresh_token" binding:"required" example:"d9f8a7b3f2e3c4b5..."`
 }
 
 type RefreshTokenRecord struct {

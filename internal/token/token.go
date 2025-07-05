@@ -23,10 +23,11 @@ func NewManager(signingKey string) (*Manager, error) {
 	return &Manager{signingKey: signingKey}, nil
 }
 
-func (m *Manager) NewJWT(userId string, ttl time.Duration) (string, error) {
+func (m *Manager) NewJWT(userId string, sessionID string, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-		"exp": time.Now().Add(ttl).Unix(),
-		"sub": userId,
+		"sub":        userId,
+		"session_id": sessionID,
+		"exp":        time.Now().Add(ttl).Unix(),
 	})
 
 	return token.SignedString([]byte(m.signingKey))

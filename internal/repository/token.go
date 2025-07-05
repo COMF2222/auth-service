@@ -2,7 +2,9 @@ package repository
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"hh/internal/model"
 	"io"
@@ -131,4 +133,26 @@ func (r *TokenRepository) SendIpChangeWebhook(ctx context.Context, userID, oldIP
 	}
 
 	return nil
+}
+
+func (r *TokenRepository) GetCurrentSessionID(ctx context.Context, userID string) (string, error) {
+	var sessionID string
+
+	query := `
+		SELECT id 
+		FROM refresh_tokens 
+		WHERE user_id = $1 AND revoked = false
+		ORDER BY created_at DESC 
+		LIMIT 1
+	`
+	err := r.db.QueryRow(ctx, query, userID).Scan(&sessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", fmt.Errorf("no active session found for user: %s", userID)
+		}
+		return "", fmt.Errorf("failed to get current session: %w", err)
+	}
+
+	return sessionID, nil
+
 }

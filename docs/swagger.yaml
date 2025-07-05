@@ -1,0 +1,170 @@
+basePath: /
+definitions:
+  handler.ErrorResponse:
+    properties:
+      error:
+        example: описание ошибки
+        type: string
+    type: object
+  handler.GetGUIDResponse:
+    properties:
+      user_id:
+        example: описание ответа
+        type: string
+    type: object
+  handler.LogoutResponse:
+    properties:
+      message:
+        example: описание ответа
+        type: string
+    type: object
+  model.RefreshRequest:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      refresh_token:
+        example: d9f8a7b3f2e3c4b5...
+        type: string
+    required:
+    - access_token
+    - refresh_token
+    type: object
+  model.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact: {}
+  title: Auth service
+  version: "1.0"
+paths:
+  /logout:
+    post:
+      description: Деавторизация пользователя, отзыв всех токенов
+      parameters:
+      - default: Bearer <token>
+        description: Access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            $ref: '#/definitions/handler.LogoutResponse'
+        "401":
+          description: Неавторизованный доступ или неверный токен
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /me:
+    get:
+      description: Возвращает GUID текущего авторизованного пользователя
+      parameters:
+      - default: Bearer <token>
+        description: Access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: GUID пользователя
+          schema:
+            $ref: '#/definitions/handler.GetGUIDResponse'
+        "401":
+          description: Неавторизованный доступ или неверный токен
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user GUID
+      tags:
+      - user
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет пару токенов с проверкой старых refresh и access токенов
+      parameters:
+      - description: Токены для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Новые токены
+          schema:
+            $ref: '#/definitions/model.RefreshRequest'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "401":
+          description: Невалидный или отозванный токен
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Refresh access and refresh tokens
+      tags:
+      - auth
+  /tokens:
+    get:
+      consumes:
+      - application/json
+      description: Создаёт пару токенов для пользователя по user_id
+      parameters:
+      - description: User ID (GUID)
+        in: query
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ с токенами
+          schema:
+            $ref: '#/definitions/model.TokenPair'
+        "400":
+          description: user_id отсутствует в запросе
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Generate access and refresh tokens
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

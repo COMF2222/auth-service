@@ -3,14 +3,30 @@ package main
 import (
 	"hh/config"
 	"hh/internal/handler"
+	"hh/internal/middleware"
 	"hh/internal/repository"
 	"hh/internal/service"
 	"hh/internal/token"
 	"log"
 	"net/http"
 
+	_ "hh/docs"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @title Auth service
+// @version 1.0
+// @desription API server for hh.ru
+
+// @host localhost:8082
+// @BasePath /
+
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	cfg, err := config.Load()
@@ -36,12 +52,19 @@ func main() {
 
 	tokenService := service.NewTokenService(tokenManager, tokenRepo)
 
+	authMiddleware := middleware.NewMiddleware(tokenRepo)
+
 	authHandler := handler.NewAuthHandler(tokenService)
 
 	r := gin.Default()
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	r.GET("/tokens", authHandler.GenerateTokens)
 	r.POST("/refresh", authHandler.RefreshTokens)
+
+	r.GET("/me", middleware.AuthMiddleware(authMiddleware), authHandler.GetGUID)
+	r.POST("/logout", middleware.AuthMiddleware(authMiddleware), authHandler.Logout)
 
 	r.Run(":8082")
 }
