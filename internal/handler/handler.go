@@ -36,7 +36,7 @@ func NewAuthHandler(authService *service.TokenService) *AuthHandler {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param user_id query string true "User ID (GUID)"
+// @Param user_id query string true "User ID (GUID)" default(626e470d-47b5-4be5-ab27-92b06167ac63)
 // @Success 200 {object} model.TokenPair "Успешный ответ с токенами"
 // @Failure 400 {object} ErrorResponse "user_id отсутствует в запросе"
 // @Failure 500 {object} ErrorResponse "внутренняя ошибка сервера"

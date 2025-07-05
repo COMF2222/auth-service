@@ -27,6 +27,7 @@ import (
 // @securityDefinitions.apiKey ApiKeyAuth
 // @in header
 // @name Authorization
+// @description Введите токен с префиксом `Bearer`, например, «Bearer abcdef12345».
 
 func main() {
 	cfg, err := config.Load()

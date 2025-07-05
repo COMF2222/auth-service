@@ -171,6 +171,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "626e470d-47b5-4be5-ab27-92b06167ac63",
                         "description": "User ID (GUID)",
                         "name": "user_id",
                         "in": "query",
@@ -259,6 +260,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "ApiKeyAuth": {
+            "description": "Введите токен с префиксом ` + "`" + `Bearer` + "`" + `, например, «Bearer abcdef12345».",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

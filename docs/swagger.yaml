@@ -139,7 +139,8 @@ paths:
       - application/json
       description: Создаёт пару токенов для пользователя по user_id
       parameters:
-      - description: User ID (GUID)
+      - default: 626e470d-47b5-4be5-ab27-92b06167ac63
+        description: User ID (GUID)
         in: query
         name: user_id
         required: true
@@ -164,6 +165,7 @@ paths:
       - auth
 securityDefinitions:
   ApiKeyAuth:
+    description: Введите токен с префиксом `Bearer`, например, «Bearer abcdef12345».
     in: header
     name: Authorization
     type: apiKey
