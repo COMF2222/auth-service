@@ -23,7 +23,7 @@ services:
     env_file:
       - .env
     volumes:
-      - .:/app
+      - .:/cmd
     restart: always
 
   migrate:
